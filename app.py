@@ -6,6 +6,7 @@ from flask_jwt_extended import (
     get_jwt_identity, get_jwt_claims
 
 )
+import statement4db as db
 app = Flask(__name__)
 CORS(app)
 
@@ -72,6 +73,15 @@ def protected():
         }
     return jsonify(ret), 200
 
+@app.route("/get-academic-years")
+def get_academic_years():
+    res = db.get_academic_years()
+    return jsonify({"res":res})
+
+@app.route("/get-semesters")
+def get_semesters_details():
+    res = db.get_semesters()
+    return jsonify({"res":res})
 
 if __name__ == "__main__":
     app.run(port=8088,debug=True)
