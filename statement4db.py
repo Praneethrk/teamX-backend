@@ -25,6 +25,18 @@ def get_semesters():
     res.sort()
     return res
 
+
+def get_user_usn(email):
+    collection = db.dhi_user
+    usn = collection.aggregate([
+        {"$match":{"email":email}},
+        {"$project":{"_id":0,"usn":1}}
+        ])
+    res = []
+    for x in usn:
+        res = x["usn"]
+    return res
+
 def get_placment_offers(term, usn):
 
     collection=db.pms_placement_student_details
@@ -35,14 +47,5 @@ def get_placment_offers(term, usn):
     ])
     res = []
     for x in offers:
-        res.append(x)
-    return res
-
-def get_user_usn(email):
-    collection = db.dhi_user
-    usn = collection.aggregate([{"$match":{"email":email}},
-            {"$project":{"_id":0,"usn":1}}])
-    res = []
-    for x in usn:
         res.append(x)
     return res

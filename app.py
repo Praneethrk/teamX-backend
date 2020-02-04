@@ -82,16 +82,17 @@ def get_academic_years():
 def get_semesters_details():
     res = db.get_semesters()
     return jsonify({"res":res})
+    
+@app.route("/get_user_usn/<email>")
+def get_user_email(email):
+    res = db.get_user_usn(email)
+    return jsonify({"res":res})
 
 @app.route("/get_placement_offer/<term>/<usn>")
 def get_placement_offer(term,usn):
     res = db.get_placment_offers(term,usn)
     return jsonify({"res":res})
 
-@app.route("/get_user_usn/<email>")
-def get_user_email(email):
-    res = db.get_user_usn(email)
-    return jsonify({"res":res})
 
 if __name__ == "__main__":
     app.run(port=8088,debug=True)
