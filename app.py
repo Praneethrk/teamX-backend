@@ -73,14 +73,24 @@ def protected():
         }
     return jsonify(ret), 200
 
-@app.route("/get-academic-years")
+@app.route("/get_academic_years")
 def get_academic_years():
     res = db.get_academic_years()
     return jsonify({"res":res})
 
-@app.route("/get-semesters")
+@app.route("/get_semesters")
 def get_semesters_details():
     res = db.get_semesters()
+    return jsonify({"res":res})
+
+@app.route("/get_placement_offer/<term>/<usn>")
+def get_placement_offer(term,usn):
+    res = db.get_placment_offers(term,usn)
+    return jsonify({"res":res})
+
+@app.route("/get_user_usn/<email>")
+def get_user_email(email):
+    res = db.get_user_usn(email)
     return jsonify({"res":res})
 
 if __name__ == "__main__":
