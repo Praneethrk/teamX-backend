@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 import pymongo
 from pprint import pprint
+import re
+import bson
 
 db = MongoClient()
 mydb = db.dhi_analytics
@@ -72,4 +74,16 @@ def get_uescore(year,dept,usn,term):
         res.append(x)
     return res
     
+#returns the list of all faculties in a department
+def get_faculties_by_dept(empId):
+    collection = db.dhi_user
+    pattern = re.compile(f'^{empId}')
+    regex = bson.regex.Regex.from_native(pattern)
+    regex.flags ^= re.UNICODE 
+    faculties = collection.aggregate([
+        {"$match":{"roles.roleName":"FACULTY","employeeGivenId":{"$regex":regex}}},
+        {"$project":{"employeeGivenId":1,"name":1,"_id":0}}
+    ])
+    res = [f for f in faculties]
+    return res
 

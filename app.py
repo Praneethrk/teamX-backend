@@ -112,5 +112,10 @@ def get_uescore(year,dept,usn,term):
     res = db.get_uescore(year,dept,usn,term)
     return jsonify({"res":res})
 
+@app.route("/get_dept_faculty/<empid>")
+def get_dept_faculty(empid):
+    res = db.get_faculties_by_dept(empid)
+    return jsonify({"res":res})
+
 if __name__ == "__main__":
     app.run(debug=True)
