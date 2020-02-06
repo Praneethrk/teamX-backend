@@ -75,15 +75,18 @@ def get_uescore(year,dept,usn,term):
     return res
     
 #returns the list of all faculties in a department
-def get_faculties_by_dept(empId):
+def get_faculties_by_dept(dept):
     collection = db.dhi_user
-    pattern = re.compile(f'^{empId}')
+    pattern = re.compile(f'^{dept}')
     regex = bson.regex.Regex.from_native(pattern)
     regex.flags ^= re.UNICODE 
     faculties = collection.aggregate([
         {"$match":{"roles.roleName":"FACULTY","employeeGivenId":{"$regex":regex}}},
+        {"$sort":{"name":1}},
         {"$project":{"employeeGivenId":1,"name":1,"_id":0}}
     ])
-    res = [f for f in faculties]
+    res = []    
+    for x in faculties:
+        res.append(x)
     return res
 
