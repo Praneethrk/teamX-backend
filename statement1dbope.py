@@ -90,3 +90,48 @@ def get_faculties_by_dept(dept):
         res.append(x)
     return res
 
+
+def get_faculty_wise_ue_details():
+    collection = db.dhi_internal
+    course = collection.aggregate([
+    {"$match":{"academicYear" : "2017-18"}},
+    {"$unwind":"$departments"},
+    {"$match":{"departments.termNumber":"3"}},
+    {"$unwind":"$faculties"},
+    {"$match":{"faculties.facultyGivenId":"CIV598"}},
+    {"$group":{"_id":{"courseName":"$courseName","courseCode":"$courseCode"}}},
+    {"$project":{"_id":0,"courseName":"$_id.courseName","courseCode":"$_id.courseCode"}}
+    ])
+
+    # res = []    
+    # for x in course:
+    #     res.append(x)
+    # # return res
+    # for k,v in res.items():
+    #     print(k,v)
+
+# get_faculty_wise_ue_details()
+
+# db.getCollection('dhi_internal').aggregate([
+# {$match:{"academicYear":"2017-18","departments.termNumber":"3"}},
+# {$unwind: {'path':"$faculties"}},
+# {$unwind: {'path':"$faculties.facultyName"}},
+# {$match:{"faculties.facultyGivenId":"CIV598"}},
+# {
+# $lookup:
+# {
+# from: "pms_university_exam",
+# localField: "",
+# foreignField: "terms.scores.usn",
+# as: "usn"
+# }
+# },
+# // 
+# {"$unwind":{'path':"$usn"}},
+#  {"$unwind":{'path':"$usn.terms"}},
+# {"$unwind":{'path':"$usn.terms.scores"}},
+#  {"$unwind":{'path':"$usn.terms.scores.courseScores"}},
+#  {"$match":{$expr:{$eq:["$usn.terms.scores.courseScores.courseCode","$courseCode"]}}},
+#  {"$group":{"_id":{"faculty": "$faculties.facultyName" ,"course": "$courseName","savg":{"$sum":"$usn.terms.scores.courseScores.ueScore"}}}},
+#  {"$project":{"faculty":"$_id.faculty","course":"$_id.course","savg":"$_id.savg","_id":0}}
+# ])
