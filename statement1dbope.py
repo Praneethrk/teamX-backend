@@ -106,31 +106,92 @@ def get_faculty_wise_ue_details():
     for x in course:
         res.append(x)
     # return res
-    for k,v in res[0].items():
-        print(k,v)
+#     for k,v in res[0].items():
+#         print(k,v)
 
-get_faculty_wise_ue_details()
+# get_faculty_wise_ue_details()
 
-# db.getCollection('dhi_internal').aggregate([
-# {$match:{"academicYear":"2017-18","departments.termNumber":"3"}},
-# {$unwind: {'path':"$faculties"}},
-# {$unwind: {'path':"$faculties.facultyName"}},
-# {$match:{"faculties.facultyGivenId":"CIV598"}},
-# {
-# $lookup:
-# {
-# from: "pms_university_exam",
-# localField: "",
-# foreignField: "terms.scores.usn",
-# as: "usn"
-# }
-# },
-# // 
-# {"$unwind":{'path':"$usn"}},
-#  {"$unwind":{'path':"$usn.terms"}},
-# {"$unwind":{'path':"$usn.terms.scores"}},
-#  {"$unwind":{'path':"$usn.terms.scores.courseScores"}},
-#  {"$match":{$expr:{$eq:["$usn.terms.scores.courseScores.courseCode","$courseCode"]}}},
-#  {"$group":{"_id":{"faculty": "$faculties.facultyName" ,"course": "$courseName","savg":{"$sum":"$usn.terms.scores.courseScores.ueScore"}}}},
-#  {"$project":{"faculty":"$_id.faculty","course":"$_id.course","savg":"$_id.savg","_id":0}}
-# ])
+
+#placement details of a class handled by empID
+def get_emp_sub_placement(empID,sub,sem):
+    collection = db.dhi_student_attendance
+    students = collection.aggregate([
+        {"$match":{"faculties.employeeGivenId" : empID,"departments.termNumber":sem,"courseName":sub}},
+        {"$unwind":"$students"},
+        {"$group":{"_id":"$courseName","studentUSNs":{"$addToSet":"$students.usn"}}},
+    ])
+    res = []
+    for x in students:
+        res.append(x)
+    print(students)
+    totalStudents = 0
+    filtered = []
+    for x in res:
+        for usn in x["studentUSNs"]:
+            status = get_placed_details(usn)
+            if status!=0:
+                filtered.append(status)
+            totalStudents = len(x["studentUSNs"])
+    # print("filtered",filtered)
+    # print(f"Placed Students :{len(filtered)},No.of Offers : {sum(filtered)}")
+    return (totalStudents,len(filtered),sum(filtered))
+
+#returns no of placement offers obtained by a student of passed usn
+def get_placed_details(usn):
+    collection = db.pms_placement_student_details
+    people = collection.aggregate([
+    {"$match":{"studentList.regNo":usn}},
+    {"$unwind":"$studentList"},
+    {"$match":{"studentList.regNo":usn}},
+    ])
+    res = []
+    for x in people:
+        res.append(x)
+    return len(res)
+
+# get faculty wise student UE score
+def get_faculty_id(empID):
+    collection =db.dhi_internal
+    emp = collection.aggregate([
+    {"$unwind":{"path":"$faculties"}},
+    {"$match":{"faculties.facultyGivenId":empID}},
+    {"$group":{"_id":"null","id":{"$addToSet":"$faculties.facultyId"}}},
+    {"$unwind":{"path":"$id"}},
+    {"$project":{"id":1,"_id":0}}
+    ])
+    res = []
+    for x in emp:
+        res.append(x)
+    for i in res:
+        id = i
+    fac_id = id['id']
+    return fac_id
+
+
+def get_faculty_stu_ue(year,term,id):
+    collection =db.dhi_student_attendance
+    emp = collection.aggregate([
+    {"$match":{"academicYear":year,"students.termNumber":term}},
+    {"$unwind":{'path':"$faculties"}},
+    {"$match":{"faculties.facultyId":id}},
+    {
+    "$lookup":
+    {
+    "from":"pms_university_exam",
+    "localField":"students.usn",
+    "foreignField":"terms.scores.usn",
+    "as":"usn"
+    }
+    },
+    {"$unwind":{'path':"$usn"}},
+    {"$unwind":{'path':"$usn.terms"}},
+    {"$unwind":{'path':"$usn.terms.scores"}},
+    {"$unwind":{'path':"$usn.terms.scores.courseScores"}},
+    {"$match":{"$expr":{"$eq":["$usn.terms.scores.courseScores.courseCode","$courseCode"]}}},
+    {"$group":{"_id":{"course":"$courseName"},"ue":{"$push":"$usn.terms.scores.courseScores.ueScore"}}},
+    {"$project":{"course":"$_id.course","avg":{"$avg":"$ue"},"ue":"$ue","_id":0}}
+    ])
+    res = []
+    for x in emp:
+        res.append(x)
+    return res
