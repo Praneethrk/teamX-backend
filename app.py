@@ -133,6 +133,11 @@ def getSubPlacement(empid,sem,sub):
         "totalPositions": details[2]
     })
     
+@app.route('/depts')
+def getAllDept():
+    depts = db.get_all_depts()
+    return jsonify({"depts":depts})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

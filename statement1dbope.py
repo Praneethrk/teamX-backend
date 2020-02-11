@@ -90,30 +90,6 @@ def get_faculties_by_dept(dept):
         res.append(x)
     return res
 
-def get_faculty_wise_ue_details():
-    collection = db.dhi_internal
-    course = collection.aggregate([
-    {"$match":{"academicYear" : "2017-18"}},
-    {"$unwind":"$departments"},
-    {"$match":{"departments.termNumber":"3"}},
-    {"$unwind":"$faculties"},
-    {"$match":{"faculties.facultyGivenId":"CIV598"}},
-    {"$group":{"_id":{"courseName":"$courseName","courseCode":"$courseCode"}}},
-    {"$project":{"_id":0,"courseName":"$_id.courseName","courseCode":"$_id.courseCode"}}
-    ])
-
-    res = []    
-    for x in course:
-        res.append(x)
-    # return res
-#     for k,v in res[0].items():
-#         print(k,v)
-
-# get_faculty_wise_ue_details()
-
-
-
-
 # get faculty wise student UE score
 def get_faculty_id(empID):
     collection =db.dhi_internal
@@ -170,7 +146,7 @@ def get_faculty_stu_ue(empid,year,term,id):
         res.append(mark)
     return res
 
-    #placement details of a class handled by empID
+#placement details of a class handled by empID
 def get_emp_sub_placement(empID,sub,sem):
     collection = db.dhi_student_attendance
     students = collection.aggregate([
@@ -190,8 +166,6 @@ def get_emp_sub_placement(empID,sub,sem):
             if status!=0:
                 filtered.append(status)
             totalStudents = len(x["studentUSNs"])
-    # print("filtered",filtered)
-    # print(f"Placed Students :{len(filtered)},No.of Offers : {sum(filtered)}")
     return (totalStudents,len(filtered),sum(filtered))
 
 #returns no of placement offers obtained by a student of passed usn
@@ -206,3 +180,23 @@ def get_placed_details(usn):
     for x in people:
         res.append(x)
     return len(res)
+
+#returns the list of all department
+def get_all_depts():
+    collection = db.dhi_user
+    depts = collection.aggregate([
+        {"$match":{"roles.roleName":"FACULTY"}},
+        {"$project":{"_id":0,"employeeGivenId":1}}
+    ])
+    res = []
+    for d in depts:
+        if "employeeGivenId" in d:
+            res.append(d["employeeGivenId"])
+    dept = []
+    for d in res:
+        name = re.findall('([a-zA-Z]*).*',d)
+        if name[0].upper() not in dept:
+            dept.append(name[0].upper())
+    dept.remove('ADM')
+    dept.remove('EC')
+    return dept
