@@ -117,5 +117,22 @@ def get_dept_faculty(empid):
     res = db.get_faculties_by_dept(empid)
     return jsonify({"res":res})
 
+@app.route("/get_faculty_stud_ue/<empid>/<year>/<term>")
+def get_faculty_stud_ue(empid,year,term):
+    fid = db.get_faculty_id(empid)
+    res = db.get_faculty_stu_ue(empid,year,term,fid)
+    return jsonify({"res":res})
+
+@app.route('/get_facul_stud_placement/<empid>/<sem>/<sub>')
+def getSubPlacement(empid,sem,sub):
+    details = db.get_emp_sub_placement(empid,sub,sem)
+    return jsonify({
+        "courseCode":sub,
+        "totalStudents" : details[0],
+        "placedStudents": details[1],
+        "totalPositions": details[2]
+    })
+    
+
 if __name__ == "__main__":
     app.run(debug=True)
