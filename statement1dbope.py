@@ -200,3 +200,18 @@ def get_all_depts():
     dept.remove('ADM')
     dept.remove('EC')
     return dept
+
+def get_user_name_by_email(email):
+    collection = db.dhi_user
+
+    res = collection.aggregate([
+
+    {"$match":{"email":email}},
+    {"$project":{"name":"$name", "_id":0}}
+    ])  
+
+    name = []
+
+    for x in res:
+        name = x['name']
+    return name

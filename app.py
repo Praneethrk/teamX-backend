@@ -138,6 +138,10 @@ def getAllDept():
     depts = db.get_all_depts()
     return jsonify({"depts":depts})
 
+@app.route('/getUserNameEmail/<email>')
+def get_user_name_by_email(email):
+    res = db.get_user_name_by_email(email)
+    return jsonify({'name':res})
 
 if __name__ == "__main__":
     app.run(debug=True)
